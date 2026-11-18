@@ -14,6 +14,8 @@ namespace LibraryHub
         private readonly ComboBox publisherBox = new ComboBox();
         private readonly ComboBox categoryBox = new ComboBox();
 
+        private readonly int? bookId;
+
         private readonly string connectionString =
             "Server=sheelpek;" +
             "Database=biblioteka;" +
@@ -21,11 +23,20 @@ namespace LibraryHub
             "Encrypt=True;" +
             "TrustServerCertificate=True;";
 
-        public BookForm()
+        public BookForm() : this(null)
+        {
+        }
+
+        public BookForm(int? selectedBookId)
         {
             InitializeComponent();
 
-            Text = "LibraryHub — Добавить книгу";
+            bookId = selectedBookId;
+
+            Text = bookId.HasValue
+                ? "LibraryHub — Редактировать книгу"
+                : "LibraryHub — Добавить книгу";
+
             Size = new Size(520, 540);
             MinimumSize = new Size(520, 540);
             MaximumSize = new Size(520, 540);
@@ -37,12 +48,20 @@ namespace LibraryHub
 
             LoadPublishers();
             LoadCategories();
+
+            if (bookId.HasValue)
+            {
+                LoadBookDetails();
+            }
         }
 
         private void CreateInterface()
         {
             Label title = new Label();
-            title.Text = "Новая книга";
+            title.Text = bookId.HasValue
+                ? "Редактирование книги"
+                : "Новая книга";
+
             title.Font = new Font(
                 "Segoe UI", 20, FontStyle.Bold);
             title.ForeColor = Color.FromArgb(41, 59, 49);
@@ -82,6 +101,7 @@ namespace LibraryHub
             saveButton.ForeColor = Color.White;
             saveButton.FlatStyle = FlatStyle.Flat;
             saveButton.FlatAppearance.BorderSize = 0;
+            saveButton.Cursor = Cursors.Hand;
             saveButton.Click += SaveBook;
             Controls.Add(saveButton);
 
@@ -94,7 +114,8 @@ namespace LibraryHub
                 Color.FromArgb(41, 59, 49);
             cancelButton.FlatStyle = FlatStyle.Flat;
             cancelButton.FlatAppearance.BorderSize = 0;
-            cancelButton.Click += (sender, e) => Close();
+            cancelButton.Cursor = Cursors.Hand;
+            cancelButton.DialogResult = DialogResult.Cancel;
             Controls.Add(cancelButton);
 
             AcceptButton = saveButton;
@@ -131,9 +152,9 @@ namespace LibraryHub
                 DataTable table = new DataTable();
                 adapter.Fill(table);
 
-                publisherBox.DataSource = table;
                 publisherBox.DisplayMember = "наименование";
                 publisherBox.ValueMember = "код_издательства";
+                publisherBox.DataSource = table;
                 publisherBox.SelectedIndex = -1;
             }
             catch (Exception ex)
@@ -163,15 +184,77 @@ namespace LibraryHub
                 DataTable table = new DataTable();
                 adapter.Fill(table);
 
-                categoryBox.DataSource = table;
                 categoryBox.DisplayMember = "наименование";
                 categoryBox.ValueMember = "раздел_классификатора";
+                categoryBox.DataSource = table;
                 categoryBox.SelectedIndex = -1;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
                     "Ошибка загрузки классификатора:\n" + ex.Message);
+            }
+        }
+
+        private void LoadBookDetails()
+        {
+            string query = @"
+                SELECT
+                    [наименование],
+                    [год_издания],
+                    [код_издательства],
+                    [раздел_классификатора]
+                FROM [Книги]
+                WHERE [код_книги] = @bookId";
+
+            try
+            {
+                using SqlConnection connection =
+                    new SqlConnection(connectionString);
+
+                using SqlCommand command =
+                    new SqlCommand(query, connection);
+
+                command.Parameters.Add(
+                    "@bookId", SqlDbType.Int
+                ).Value = bookId!.Value;
+
+                connection.Open();
+
+                using SqlDataReader reader =
+                    command.ExecuteReader();
+
+                if (!reader.Read())
+                {
+                    MessageBox.Show(
+                        "Книга не найдена.",
+                        "LibraryHub",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                nameBox.Text =
+                    reader["наименование"].ToString();
+
+                yearBox.Text =
+                    reader["год_издания"] == DBNull.Value
+                        ? ""
+                        : reader["год_издания"].ToString();
+
+                publisherBox.SelectedValue =
+                    reader["код_издательства"];
+
+                categoryBox.SelectedValue =
+                    reader["раздел_классификатора"];
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Ошибка загрузки книги:\n" + ex.Message,
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
@@ -207,21 +290,31 @@ namespace LibraryHub
                 if (!int.TryParse(yearBox.Text, out int value) ||
                     value < 1 || value > DateTime.Now.Year + 1)
                 {
-                    MessageBox.Show("Укажите корректный год издания.");
+                    MessageBox.Show(
+                        "Укажите корректный год издания.");
                     return;
                 }
 
                 year = value;
             }
 
-            string query = @"
-                INSERT INTO [Книги]
-                    ([наименование],
-                     [код_издательства],
-                     [год_издания],
-                     [раздел_классификатора])
-                VALUES
-                    (@name, @publisher, @year, @category)";
+            string query = bookId.HasValue
+                ? @"
+                    UPDATE [Книги]
+                    SET
+                        [наименование] = @name,
+                        [код_издательства] = @publisher,
+                        [год_издания] = @year,
+                        [раздел_классификатора] = @category
+                    WHERE [код_книги] = @bookId"
+                : @"
+                    INSERT INTO [Книги]
+                        ([наименование],
+                         [код_издательства],
+                         [год_издания],
+                         [раздел_классификатора])
+                    VALUES
+                        (@name, @publisher, @year, @category)";
 
             try
             {
@@ -250,11 +343,31 @@ namespace LibraryHub
                     "@category", SqlDbType.NVarChar, 150
                 ).Value = categoryBox.SelectedValue.ToString()!;
 
+                if (bookId.HasValue)
+                {
+                    command.Parameters.Add(
+                        "@bookId", SqlDbType.Int
+                    ).Value = bookId.Value;
+                }
+
                 connection.Open();
-                command.ExecuteNonQuery();
+
+                int affectedRows = command.ExecuteNonQuery();
+
+                if (affectedRows == 0)
+                {
+                    MessageBox.Show(
+                        "Запись не найдена. Изменения не сохранены.",
+                        "LibraryHub",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
 
                 MessageBox.Show(
-                    "Книга успешно добавлена!",
+                    bookId.HasValue
+                        ? "Книга успешно обновлена!"
+                        : "Книга успешно добавлена!",
                     "LibraryHub",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);

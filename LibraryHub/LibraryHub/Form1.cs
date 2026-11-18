@@ -33,8 +33,8 @@ namespace LibraryHub
             InitializeComponent();
 
             Text = "LibraryHub — Каталог книг";
-            Size = new Size(1050, 650);
-            MinimumSize = new Size(950, 500);
+            Size = new Size(1100, 650);
+            MinimumSize = new Size(1000, 500);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = backgroundColor;
             Font = new Font("Segoe UI", 10);
@@ -92,7 +92,7 @@ namespace LibraryHub
 
             toolbar.Controls.Add(searchLabel);
 
-            searchBox.Width = 300;
+            searchBox.Width = 260;
             searchBox.Font = new Font("Segoe UI", 11);
             searchBox.BackColor = Color.White;
             searchBox.ForeColor = darkColor;
@@ -105,7 +105,7 @@ namespace LibraryHub
 
             Button refreshButton = new Button();
             refreshButton.Text = "Обновить";
-            refreshButton.Size = new Size(120, 35);
+            refreshButton.Size = new Size(110, 35);
             refreshButton.BackColor =
                 Color.FromArgb(229, 237, 229);
             refreshButton.ForeColor = darkColor;
@@ -119,16 +119,30 @@ namespace LibraryHub
 
             Button addButton = new Button();
             addButton.Text = "+ Добавить книгу";
-            addButton.Size = new Size(165, 35);
+            addButton.Size = new Size(155, 35);
             addButton.BackColor = sageColor;
             addButton.ForeColor = Color.White;
             addButton.FlatStyle = FlatStyle.Flat;
             addButton.FlatAppearance.BorderSize = 0;
             addButton.Cursor = Cursors.Hand;
-            addButton.Margin = new Padding(0, 3, 0, 0);
+            addButton.Margin = new Padding(0, 3, 10, 0);
             addButton.Click += AddBook;
 
             toolbar.Controls.Add(addButton);
+
+            Button editButton = new Button();
+            editButton.Text = "Редактировать";
+            editButton.Size = new Size(145, 35);
+            editButton.BackColor =
+                Color.FromArgb(229, 237, 229);
+            editButton.ForeColor = darkColor;
+            editButton.FlatStyle = FlatStyle.Flat;
+            editButton.FlatAppearance.BorderSize = 0;
+            editButton.Cursor = Cursors.Hand;
+            editButton.Margin = new Padding(0, 3, 0, 0);
+            editButton.Click += EditBook;
+
+            toolbar.Controls.Add(editButton);
 
             booksTable.Dock = DockStyle.Fill;
             booksTable.BackgroundColor = Color.White;
@@ -169,12 +183,8 @@ namespace LibraryHub
             booksTable.ColumnHeadersDefaultCellStyle.SelectionForeColor =
                 darkColor;
 
-            booksTable.DefaultCellStyle.BackColor =
-                Color.White;
-
-            booksTable.DefaultCellStyle.ForeColor =
-                darkColor;
-
+            booksTable.DefaultCellStyle.BackColor = Color.White;
+            booksTable.DefaultCellStyle.ForeColor = darkColor;
             booksTable.DefaultCellStyle.Font =
                 new Font("Segoe UI", 10);
 
@@ -218,6 +228,31 @@ namespace LibraryHub
         private void AddBook(object? sender, EventArgs e)
         {
             using BookForm form = new BookForm();
+
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                LoadBooks();
+            }
+        }
+
+        private void EditBook(object? sender, EventArgs e)
+        {
+            if (booksTable.SelectedRows.Count == 0)
+            {
+                MessageBox.Show(
+                    "Сначала выберите книгу в таблице.",
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            DataGridViewRow row = booksTable.SelectedRows[0];
+
+            int bookId = Convert.ToInt32(
+                row.Cells["Код книги"].Value);
+
+            using BookForm form = new BookForm(bookId);
 
             if (form.ShowDialog(this) == DialogResult.OK)
             {
