@@ -1,40 +1,29 @@
-
 # LibraryHub
 
-LibraryHub is a desktop library management system
-developed using C# and Windows Forms.
+A desktop library management system built with C# and Windows Forms, integrated with Microsoft SQL Server.
 
-## Technologies
-- C#
-- .NET 8
-- Windows Forms
-- Microsoft SQL Server
-- Microsoft.Data.SqlClient
-- Git and GitHub
+## Tech Stack
+
+- **Language:** C#
+- **Framework:** .NET 8
+- **UI:** Windows Forms
+- **Database:** Microsoft SQL Server
+- **Data Access:** Microsoft.Data.SqlClient
+
+## Features
+
+- Book catalog with search and sorting
+- Book and inventory management
+- Reader and librarian management
+- Lending and return tracking
+- SQL views and stored procedures
+- Data export to PDF and Excel
+- User authentication and role-based access
 
 ## Database
-The application connects to an existing SQL Server
-database named `biblioteka`.
 
-The database contains 11 main tables, including:
-- Books
-- Readers
-- Librarians
-- Book circulation
-- Book availability
-- Authors
-- Fines
+Built around an existing SQL Server database (`biblioteka`) containing 11 related tables.
 
-## Current Progress
-- [x] GitHub repository created
-- [x] Windows Forms project initialized
-- [x] SQL Server connection implemented and tested
-- [ ] User authentication
-- [ ] Reader and librarian dashboards
-- [ ] Book catalog and search
-- [ ] Book reservation system
-- [ ] Lending and return management
-- [ ] Reports and statistics
+## Status
 
-## Project Status
-In development.
+Under active development. Features are being implemented incrementally.
