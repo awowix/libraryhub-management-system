@@ -92,7 +92,7 @@ namespace LibraryHub
 
             toolbar.Controls.Add(searchLabel);
 
-            searchBox.Width = 260;
+            searchBox.Width = 200;
             searchBox.Font = new Font("Segoe UI", 11);
             searchBox.BackColor = Color.White;
             searchBox.ForeColor = darkColor;
@@ -139,10 +139,25 @@ namespace LibraryHub
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.FlatAppearance.BorderSize = 0;
             editButton.Cursor = Cursors.Hand;
-            editButton.Margin = new Padding(0, 3, 0, 0);
+            editButton.Margin = new Padding(0, 3, 10, 0);
             editButton.Click += EditBook;
 
             toolbar.Controls.Add(editButton);
+
+            Button deleteButton = new Button();
+            deleteButton.Text = "Удалить";
+            deleteButton.Size = new Size(100, 35);
+            deleteButton.BackColor =
+                Color.FromArgb(245, 225, 225);
+            deleteButton.ForeColor =
+                Color.FromArgb(150, 55, 55);
+            deleteButton.FlatStyle = FlatStyle.Flat;
+            deleteButton.FlatAppearance.BorderSize = 0;
+            deleteButton.Cursor = Cursors.Hand;
+            deleteButton.Margin = new Padding(0, 3, 0, 0);
+            deleteButton.Click += DeleteBook;
+
+            toolbar.Controls.Add(deleteButton);
 
             booksTable.Dock = DockStyle.Fill;
             booksTable.BackgroundColor = Color.White;
@@ -257,6 +272,95 @@ namespace LibraryHub
             if (form.ShowDialog(this) == DialogResult.OK)
             {
                 LoadBooks();
+            }
+        }
+
+        private void DeleteBook(object? sender, EventArgs e)
+        {
+            if (booksTable.SelectedRows.Count == 0)
+            {
+                MessageBox.Show(
+                    "Сначала выберите книгу в таблице.",
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            DataGridViewRow row = booksTable.SelectedRows[0];
+
+            int bookId = Convert.ToInt32(
+                row.Cells["Код книги"].Value);
+
+            string bookName =
+                row.Cells["Название книги"].Value?.ToString() ?? "";
+
+            DialogResult result = MessageBox.Show(
+                $"Вы действительно хотите удалить книгу «{bookName}»?",
+                "Подтверждение удаления",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+
+            if (result != DialogResult.Yes)
+                return;
+
+            string query = @"
+                DELETE FROM [Книги]
+                WHERE [код_книги] = @bookId";
+
+            try
+            {
+                using SqlConnection connection =
+                    new SqlConnection(connectionString);
+
+                using SqlCommand command =
+                    new SqlCommand(query, connection);
+
+                command.Parameters.Add(
+                    "@bookId", SqlDbType.Int
+                ).Value = bookId;
+
+                connection.Open();
+
+                int affectedRows = command.ExecuteNonQuery();
+
+                if (affectedRows == 0)
+                {
+                    MessageBox.Show(
+                        "Книга не найдена. Возможно, она уже удалена.",
+                        "LibraryHub",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    LoadBooks();
+                    return;
+                }
+
+                MessageBox.Show(
+                    "Книга успешно удалена!",
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                LoadBooks();
+            }
+            catch (SqlException ex) when (ex.Number == 547)
+            {
+                MessageBox.Show(
+                    "Нельзя удалить книгу, поскольку она связана " +
+                    "с другими записями библиотеки.",
+                    "Удаление невозможно",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Ошибка удаления книги:\n" + ex.Message,
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
