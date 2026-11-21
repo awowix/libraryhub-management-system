@@ -3,7 +3,6 @@ using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using Microsoft.Data.SqlClient;
 
 namespace LibraryHub
 {
@@ -16,12 +15,7 @@ namespace LibraryHub
 
         private readonly int? bookId;
 
-        private readonly string connectionString =
-            "Server=sheelpek;" +
-            "Database=biblioteka;" +
-            "Integrated Security=True;" +
-            "Encrypt=True;" +
-            "TrustServerCertificate=True;";
+        private readonly BookRepository repository = new BookRepository();
 
         public BookForm() : this(null)
         {
@@ -134,23 +128,9 @@ namespace LibraryHub
 
         private void LoadPublishers()
         {
-            string query = @"
-                SELECT
-                    [код_издательства],
-                    [наименование]
-                FROM [Издательства]
-                ORDER BY [наименование]";
-
             try
             {
-                using SqlConnection connection =
-                    new SqlConnection(connectionString);
-
-                using SqlDataAdapter adapter =
-                    new SqlDataAdapter(query, connection);
-
-                DataTable table = new DataTable();
-                adapter.Fill(table);
+                DataTable table = repository.GetPublishers();
 
                 publisherBox.DisplayMember = "наименование";
                 publisherBox.ValueMember = "код_издательства";
@@ -166,23 +146,9 @@ namespace LibraryHub
 
         private void LoadCategories()
         {
-            string query = @"
-                SELECT
-                    [раздел_классификатора],
-                    [наименование]
-                FROM [Классификатор]
-                ORDER BY [раздел_классификатора]";
-
             try
             {
-                using SqlConnection connection =
-                    new SqlConnection(connectionString);
-
-                using SqlDataAdapter adapter =
-                    new SqlDataAdapter(query, connection);
-
-                DataTable table = new DataTable();
-                adapter.Fill(table);
+                DataTable table = repository.GetCategories();
 
                 categoryBox.DisplayMember = "наименование";
                 categoryBox.ValueMember = "раздел_классификатора";
@@ -198,41 +164,16 @@ namespace LibraryHub
 
         private void LoadBookDetails()
         {
-            string query = @"
-                SELECT
-                    [наименование],
-                    [год_издания],
-                    [код_издательства],
-                    [раздел_классификатора]
-                FROM [Книги]
-                WHERE [код_книги] = @bookId";
-
             try
             {
-                using SqlConnection connection =
-                    new SqlConnection(connectionString);
-
-                using SqlCommand command =
-                    new SqlCommand(query, connection);
-
-                command.Parameters.Add(
-                    "@bookId", SqlDbType.Int
-                ).Value = bookId!.Value;
-
-                connection.Open();
-
-                using SqlDataReader reader =
-                    command.ExecuteReader();
-
-                if (!reader.Read())
+                DataTable details = repository.GetBookDetails(bookId!.Value);
+                if (details.Rows.Count == 0)
                 {
-                    MessageBox.Show(
-                        "Книга не найдена.",
-                        "LibraryHub",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    MessageBox.Show("Книга не найдена.", "LibraryHub",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+                DataRow reader = details.Rows[0];
 
                 nameBox.Text =
                     reader["наименование"].ToString();
@@ -298,61 +239,12 @@ namespace LibraryHub
                 year = value;
             }
 
-            string query = bookId.HasValue
-                ? @"
-                    UPDATE [Книги]
-                    SET
-                        [наименование] = @name,
-                        [код_издательства] = @publisher,
-                        [год_издания] = @year,
-                        [раздел_классификатора] = @category
-                    WHERE [код_книги] = @bookId"
-                : @"
-                    INSERT INTO [Книги]
-                        ([наименование],
-                         [код_издательства],
-                         [год_издания],
-                         [раздел_классификатора])
-                    VALUES
-                        (@name, @publisher, @year, @category)";
-
             try
             {
-                using SqlConnection connection =
-                    new SqlConnection(connectionString);
-
-                using SqlCommand command =
-                    new SqlCommand(query, connection);
-
-                command.Parameters.Add(
-                    "@name", SqlDbType.NVarChar, 150
-                ).Value = name;
-
-                command.Parameters.Add(
-                    "@publisher", SqlDbType.Int
-                ).Value = Convert.ToInt32(
-                    publisherBox.SelectedValue);
-
-                command.Parameters.Add(
-                    "@year", SqlDbType.Int
-                ).Value = year.HasValue
-                    ? year.Value
-                    : DBNull.Value;
-
-                command.Parameters.Add(
-                    "@category", SqlDbType.NVarChar, 150
-                ).Value = categoryBox.SelectedValue.ToString()!;
-
-                if (bookId.HasValue)
-                {
-                    command.Parameters.Add(
-                        "@bookId", SqlDbType.Int
-                    ).Value = bookId.Value;
-                }
-
-                connection.Open();
-
-                int affectedRows = command.ExecuteNonQuery();
+                int affectedRows = repository.SaveBook(
+                    bookId, name, year,
+                    Convert.ToInt32(publisherBox.SelectedValue),
+                    categoryBox.SelectedValue.ToString()!);
 
                 if (affectedRows == 0)
                 {

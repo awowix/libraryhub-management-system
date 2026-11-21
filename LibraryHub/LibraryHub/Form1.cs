@@ -1,4 +1,4 @@
-
+п»ї
 using System;
 using System.Data;
 using System.Drawing;
@@ -12,12 +12,7 @@ namespace LibraryHub
         private readonly DataGridView booksTable = new DataGridView();
         private readonly TextBox searchBox = new TextBox();
 
-        private readonly string connectionString =
-            "Server=sheelpek;" +
-            "Database=biblioteka;" +
-            "Integrated Security=True;" +
-            "Encrypt=True;" +
-            "TrustServerCertificate=True;";
+        private readonly BookRepository repository = new BookRepository();
 
         private readonly Color backgroundColor =
             Color.FromArgb(248, 248, 245);
@@ -32,7 +27,7 @@ namespace LibraryHub
         {
             InitializeComponent();
 
-            Text = "LibraryHub — Каталог книг";
+            Text = "LibraryHub вЂ” РљР°С‚Р°Р»РѕРі РєРЅРёРі";
             Size = new Size(1100, 650);
             MinimumSize = new Size(1000, 500);
             StartPosition = FormStartPosition.CenterScreen;
@@ -85,7 +80,7 @@ namespace LibraryHub
             layout.Controls.Add(toolbar, 0, 1);
 
             Label searchLabel = new Label();
-            searchLabel.Text = "Поиск книги";
+            searchLabel.Text = "РџРѕРёСЃРє РєРЅРёРіРё";
             searchLabel.ForeColor = darkColor;
             searchLabel.AutoSize = true;
             searchLabel.Margin = new Padding(0, 9, 15, 0);
@@ -98,13 +93,13 @@ namespace LibraryHub
             searchBox.ForeColor = darkColor;
             searchBox.BorderStyle = BorderStyle.FixedSingle;
             searchBox.Margin = new Padding(0, 3, 15, 0);
-            searchBox.PlaceholderText = "Введите название...";
+            searchBox.PlaceholderText = "Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ...";
             searchBox.TextChanged += SearchBooks;
 
             toolbar.Controls.Add(searchBox);
 
             Button refreshButton = new Button();
-            refreshButton.Text = "Обновить";
+            refreshButton.Text = "РћР±РЅРѕРІРёС‚СЊ";
             refreshButton.Size = new Size(110, 35);
             refreshButton.BackColor =
                 Color.FromArgb(229, 237, 229);
@@ -118,7 +113,7 @@ namespace LibraryHub
             toolbar.Controls.Add(refreshButton);
 
             Button addButton = new Button();
-            addButton.Text = "+ Добавить книгу";
+            addButton.Text = "+ Р”РѕР±Р°РІРёС‚СЊ РєРЅРёРіСѓ";
             addButton.Size = new Size(155, 35);
             addButton.BackColor = sageColor;
             addButton.ForeColor = Color.White;
@@ -131,7 +126,7 @@ namespace LibraryHub
             toolbar.Controls.Add(addButton);
 
             Button editButton = new Button();
-            editButton.Text = "Редактировать";
+            editButton.Text = "Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ";
             editButton.Size = new Size(145, 35);
             editButton.BackColor =
                 Color.FromArgb(229, 237, 229);
@@ -145,7 +140,7 @@ namespace LibraryHub
             toolbar.Controls.Add(editButton);
 
             Button deleteButton = new Button();
-            deleteButton.Text = "Удалить";
+            deleteButton.Text = "РЈРґР°Р»РёС‚СЊ";
             deleteButton.Size = new Size(100, 35);
             deleteButton.BackColor =
                 Color.FromArgb(245, 225, 225);
@@ -231,7 +226,7 @@ namespace LibraryHub
 
             Label footer = new Label();
             footer.Text =
-                "LibraryHub | Система управления библиотекой";
+                "LibraryHub | РЎРёСЃС‚РµРјР° СѓРїСЂР°РІР»РµРЅРёСЏ Р±РёР±Р»РёРѕС‚РµРєРѕР№";
             footer.ForeColor = Color.Gray;
             footer.Font = new Font("Segoe UI", 9);
             footer.Dock = DockStyle.Fill;
@@ -255,7 +250,7 @@ namespace LibraryHub
             if (booksTable.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "Сначала выберите книгу в таблице.",
+                    "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ РєРЅРёРіСѓ РІ С‚Р°Р±Р»РёС†Рµ.",
                     "LibraryHub",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -265,7 +260,7 @@ namespace LibraryHub
             DataGridViewRow row = booksTable.SelectedRows[0];
 
             int bookId = Convert.ToInt32(
-                row.Cells["Код книги"].Value);
+                row.Cells["РљРѕРґ РєРЅРёРіРё"].Value);
 
             using BookForm form = new BookForm(bookId);
 
@@ -280,7 +275,7 @@ namespace LibraryHub
             if (booksTable.SelectedRows.Count == 0)
             {
                 MessageBox.Show(
-                    "Сначала выберите книгу в таблице.",
+                    "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ РєРЅРёРіСѓ РІ С‚Р°Р±Р»РёС†Рµ.",
                     "LibraryHub",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -290,14 +285,14 @@ namespace LibraryHub
             DataGridViewRow row = booksTable.SelectedRows[0];
 
             int bookId = Convert.ToInt32(
-                row.Cells["Код книги"].Value);
+                row.Cells["РљРѕРґ РєРЅРёРіРё"].Value);
 
             string bookName =
-                row.Cells["Название книги"].Value?.ToString() ?? "";
+                row.Cells["РќР°Р·РІР°РЅРёРµ РєРЅРёРіРё"].Value?.ToString() ?? "";
 
             DialogResult result = MessageBox.Show(
-                $"Вы действительно хотите удалить книгу «{bookName}»?",
-                "Подтверждение удаления",
+                $"Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РєРЅРёРіСѓ В«{bookName}В»?",
+                "РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ СѓРґР°Р»РµРЅРёСЏ",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning,
                 MessageBoxDefaultButton.Button2);
@@ -305,30 +300,14 @@ namespace LibraryHub
             if (result != DialogResult.Yes)
                 return;
 
-            string query = @"
-                DELETE FROM [Книги]
-                WHERE [код_книги] = @bookId";
-
             try
             {
-                using SqlConnection connection =
-                    new SqlConnection(connectionString);
-
-                using SqlCommand command =
-                    new SqlCommand(query, connection);
-
-                command.Parameters.Add(
-                    "@bookId", SqlDbType.Int
-                ).Value = bookId;
-
-                connection.Open();
-
-                int affectedRows = command.ExecuteNonQuery();
+                int affectedRows = repository.DeleteBook(bookId);
 
                 if (affectedRows == 0)
                 {
                     MessageBox.Show(
-                        "Книга не найдена. Возможно, она уже удалена.",
+                        "РљРЅРёРіР° РЅРµ РЅР°Р№РґРµРЅР°. Р’РѕР·РјРѕР¶РЅРѕ, РѕРЅР° СѓР¶Рµ СѓРґР°Р»РµРЅР°.",
                         "LibraryHub",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -338,7 +317,7 @@ namespace LibraryHub
                 }
 
                 MessageBox.Show(
-                    "Книга успешно удалена!",
+                    "РљРЅРёРіР° СѓСЃРїРµС€РЅРѕ СѓРґР°Р»РµРЅР°!",
                     "LibraryHub",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -348,16 +327,16 @@ namespace LibraryHub
             catch (SqlException ex) when (ex.Number == 547)
             {
                 MessageBox.Show(
-                    "Нельзя удалить книгу, поскольку она связана " +
-                    "с другими записями библиотеки.",
-                    "Удаление невозможно",
+                    "РќРµР»СЊР·СЏ СѓРґР°Р»РёС‚СЊ РєРЅРёРіСѓ, РїРѕСЃРєРѕР»СЊРєСѓ РѕРЅР° СЃРІСЏР·Р°РЅР° " +
+                    "СЃ РґСЂСѓРіРёРјРё Р·Р°РїРёСЃСЏРјРё Р±РёР±Р»РёРѕС‚РµРєРё.",
+                    "РЈРґР°Р»РµРЅРёРµ РЅРµРІРѕР·РјРѕР¶РЅРѕ",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Ошибка удаления книги:\n" + ex.Message,
+                    "РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ РєРЅРёРіРё:\n" + ex.Message,
                     "LibraryHub",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -376,32 +355,9 @@ namespace LibraryHub
 
         private void LoadBooks()
         {
-            string query = @"
-                SELECT
-                    [код_книги] AS [Код книги],
-                    [наименование] AS [Название книги],
-                    [год_издания] AS [Год издания]
-                FROM [Книги]
-                WHERE [наименование] LIKE @search
-                ORDER BY [код_книги] ASC";
-
             try
             {
-                using SqlConnection connection =
-                    new SqlConnection(connectionString);
-
-                using SqlCommand command =
-                    new SqlCommand(query, connection);
-
-                command.Parameters.Add(
-                    "@search", SqlDbType.NVarChar, 150
-                ).Value = "%" + searchBox.Text + "%";
-
-                using SqlDataAdapter adapter =
-                    new SqlDataAdapter(command);
-
-                DataTable table = new DataTable();
-                adapter.Fill(table);
+                DataTable table = repository.GetBooks(searchBox.Text);
 
                 booksTable.DataSource = table;
                 booksTable.ClearSelection();
@@ -409,7 +365,7 @@ namespace LibraryHub
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Ошибка загрузки книг:\n" + ex.Message,
+                    "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РєРЅРёРі:\n" + ex.Message,
                     "LibraryHub",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
