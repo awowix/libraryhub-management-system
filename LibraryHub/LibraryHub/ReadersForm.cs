@@ -16,7 +16,7 @@ namespace LibraryHub
 
         private readonly TextBox searchBox =
             new TextBox();
-
+        private readonly Label readerCountLabel = new Label();
         private readonly Color backgroundColor =
             Color.FromArgb(248, 248, 245);
 
@@ -168,7 +168,12 @@ namespace LibraryHub
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft
             };
+            readerCountLabel.AutoSize = true;
+            readerCountLabel.ForeColor = sageColor;
+            readerCountLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
+            footer.Controls.Add(readerCountLabel);
+            readerCountLabel.Dock = DockStyle.Right;
             layout.Controls.Add(footer, 0, 4);
         }
 
@@ -310,6 +315,7 @@ namespace LibraryHub
                 }
 
                 readersTable.ClearSelection();
+                readerCountLabel.Text = $"Найдено читателей: {table.Rows.Count}";
             }
             catch (Exception ex)
             {
