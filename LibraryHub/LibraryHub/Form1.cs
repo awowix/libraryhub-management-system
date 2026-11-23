@@ -201,6 +201,7 @@ namespace LibraryHub
                 {
                     ShowBooksPage();
                 }
+
                 else if (section == "Читатели")
                 {
                     contentPanel.Controls.Clear();
@@ -210,10 +211,20 @@ namespace LibraryHub
 
                     contentPanel.Controls.Add(readersPage);
                 }
+                else if (section == "Выдача и возврат")
+                {
+                    contentPanel.Controls.Clear();
+
+                    MovementsForm movementsPage = new MovementsForm();
+                    movementsPage.Dock = DockStyle.Fill;
+
+                    contentPanel.Controls.Add(movementsPage);
+                }
                 else
                 {
                     ShowPlaceholderPage(section);
                 }
+
             };
 
             sidebarMenu.Controls.Add(button);
