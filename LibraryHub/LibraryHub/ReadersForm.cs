@@ -143,14 +143,17 @@ namespace LibraryHub
             editButton.Click += EditReader;
             actionsPanel.Controls.Add(editButton);
 
-            Button detailsButton =
-                CreateButton("Подробнее", 130, false);
+            Button deleteButton =
+                CreateButton("Удалить", 120, false);
 
-            detailsButton.Margin = new Padding(12, 3, 0, 0);
-            detailsButton.Click += (sender, e) =>
-                OpenSelectedReader(true);
+            deleteButton.Margin = new Padding(12, 3, 0, 0);
+            deleteButton.BackColor = Color.FromArgb(250, 232, 232);
+            deleteButton.ForeColor = Color.FromArgb(150, 50, 50);
 
-            actionsPanel.Controls.Add(detailsButton);
+            deleteButton.Click += DeleteReader;
+
+            actionsPanel.Controls.Add(deleteButton);
+
 
             // Таблица читателей
             ConfigureReadersTable();
@@ -389,5 +392,73 @@ namespace LibraryHub
                 LoadReaders();
             }
         }
+
+        private void DeleteReader(object? sender, EventArgs e)
+        {
+            if (readersTable.CurrentRow == null ||
+                readersTable.CurrentRow.IsNewRow)
+            {
+                MessageBox.Show(
+                    "Сначала выберите читателя.",
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            int id = Convert.ToInt32(
+                readersTable.CurrentRow.Cells["Код"].Value);
+
+            string name = readersTable.CurrentRow
+                .Cells["ФИО"].Value?.ToString() ?? "";
+
+            DialogResult answer = MessageBox.Show(
+                $"Удалить читателя «{name}»?\n\n" +
+                "Это действие нельзя отменить.",
+                "Подтверждение удаления",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+
+            if (answer != DialogResult.Yes)
+                return;
+
+            try
+            {
+                int deleted = repository.DeleteReader(id);
+
+                if (deleted > 0)
+                {
+                    MessageBox.Show(
+                        "Читатель успешно удалён.",
+                        "LibraryHub",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Удаление невозможно.\n\n" +
+                        "Читатель не найден либо у него есть " +
+                        "история выдачи книг или штрафы.\n\n" +
+                        "Для сохранения истории библиотеки " +
+                        "такие записи не удаляются.",
+                        "LibraryHub",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+
+                LoadReaders();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Не удалось удалить читателя:\n" + ex.Message,
+                    "LibraryHub",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
     }
 }

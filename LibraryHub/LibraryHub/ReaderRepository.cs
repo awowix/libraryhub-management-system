@@ -233,5 +233,34 @@ namespace LibraryHub
                 ? DBNull.Value
                 : value.Trim();
         }
+
+        public int DeleteReader(int readerId)
+        {
+            using SqlConnection connection =
+                new SqlConnection(connectionString);
+
+            connection.Open();
+
+            string query = @"
+        delete from [Читатели]
+        where [код_читателя] = @readerId
+          and not exists (
+              select 1 from [Движение]
+              where [код_читателя] = @readerId
+          )
+          and not exists (
+              select 1 from [Штраф]
+              where [код_читателя] = @readerId
+          )";
+
+            using SqlCommand command =
+                new SqlCommand(query, connection);
+
+            command.Parameters.Add("@readerId", SqlDbType.Int).Value =
+                readerId;
+
+            return command.ExecuteNonQuery();
+        }
+
     }
 }
